@@ -16,7 +16,12 @@ const authConfig = {
 
 if (process.env.GOOGLE_SERVICE_ACCOUNT) {
   // Production: Use environment variable
-  authConfig.credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
+  const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
+  // FIX: Handle private_key newline issues common in some hosting envs
+  if (credentials.private_key) {
+    credentials.private_key = credentials.private_key.replace(/\\n/g, "\n");
+  }
+  authConfig.credentials = credentials;
 } else {
   // Development: Use local file
   authConfig.keyFile = "service-account.json";
