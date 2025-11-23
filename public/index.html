@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>User Registration & Check-in</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #d9eaff, #b8d7ff);
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(6px);
+      padding: 60px;
+      border-radius: 18px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+      color: #003b80;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      margin: 12px 0;
+      border: 1px solid #aac8f0;
+      border-radius: 10px;
+      font-size: 16px;
+      background: #f6faff;
+      transition: 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #4b9bff;
+      background: #ffffff;
+      box-shadow: 0 0 6px rgba(75, 155, 255, 0.4);
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #4b9bff;
+      border: none;
+      color: white;
+      font-size: 17px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 12px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(75, 155, 255, 0.3);
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #2f7de0;
+      box-shadow: 0 6px 18px rgba(75, 155, 255, 0.45);
+    }
+
+    .success {
+      padding: 12px;
+      background: #d7ffe0;
+      color: #006b2e;
+      border-radius: 8px;
+      margin-top: 10px;
+      text-align: center;
+      display: none;
+      border: 1px solid #9affbf;
+    }
+
+    .error {
+      padding: 12px;
+      background: #ffe1e1;
+      color: #a10000;
+      border-radius: 8px;
+      margin-top: 10px;
+      text-align: center;
+      display: none;
+      border: 1px solid #ffb3b3;
+    }
+
+    .user-box {
+      background: rgba(227, 239, 255, 0.8);
+      padding: 15px;
+      margin-top: 12px;
+      border-radius: 12px;
+      border: 1px solid #bcd5ff;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-box p {
+      margin: 4px 0;
+      font-size: 15px;
+    }
+
+    .results-container {
+      margin-top: 15px;
+    }
+
+    .check-btn {
+      background: #2ecc71;
+      width: auto;
+      padding: 8px 14px;
+      font-size: 14px;
+      margin-top: 10px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+    }
+
+    .check-btn:hover {
+      background: #25a65a;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+
+    .badge-green {
+      background: #c5ffda;
+      color: #037a3a;
+    }
+
+    .badge-grey {
+      background: #e5e5e5;
+      color: #444;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container">
+    <h2>Register New User</h2>
+
+    <input type="text" id="reg_name" placeholder="Full Name">
+    <input type="text" id="reg_phone" placeholder="Phone Number">
+    <input type="email" id="reg_email" placeholder="Email Address">
+    <input type="text" id="reg_company" placeholder="Company Name">
+
+    <button onclick="registerUser()">Register & Auto Check-in</button>
+
+    <div id="reg_success" class="success">User Registered & Checked-in!</div>
+    <div id="reg_error" class="error">Please fill all fields.</div>
+
+    <hr style="margin: 25px 0;">
+
+    <h2>Search Visitors</h2>
+
+    <input type="text" id="search_input" placeholder="Enter Name / Phone / Email / Company">
+    <button onclick="searchUser()">Search</button>
+
+    <div id="search_error" class="error">No users found.</div>
+    <div id="checkin_success" class="success">Check-in Successful!</div>
+
+    <div id="results_container" class="results-container"></div>
+  </div>
+
+
+  <script>
+    const API_BASE = "";
+
+    // REGISTER NEW USER
+    async function registerUser() {
+      let name = document.getElementById("reg_name").value.trim();
+      let phone = document.getElementById("reg_phone").value.trim();
+      let email = document.getElementById("reg_email").value.trim();
+      let company = document.getElementById("reg_company").value.trim();
+
+      if (!name || !phone || !email || !company) {
+        document.getElementById("reg_error").style.display = "block";
+        setTimeout(() => document.getElementById("reg_error").style.display = "none", 2000);
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, phone, email, company })
+      });
+
+      let data = await res.json();
+
+      if (data.success) {
+        document.getElementById("reg_success").style.display = "block";
+        setTimeout(() => document.getElementById("reg_success").style.display = "none", 2000);
+
+        document.getElementById("reg_name").value = "";
+        document.getElementById("reg_phone").value = "";
+        document.getElementById("reg_email").value = "";
+        document.getElementById("reg_company").value = "";
+      } else {
+        alert(data.error || "Error while registering");
+      }
+    }
+
+    // SEARCH USERS (multiple results)
+    async function searchUser() {
+      let q = document.getElementById("search_input").value.trim();
+      const resultsDiv = document.getElementById("results_container");
+      resultsDiv.innerHTML = "";
+      document.getElementById("search_error").style.display = "none";
+
+      if (!q) {
+        document.getElementById("search_error").innerText = "Enter something to search.";
+        document.getElementById("search_error").style.display = "block";
+        setTimeout(() => document.getElementById("search_error").style.display = "none", 2000);
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+
+      if (!data.found || !Array.isArray(data.users) || data.users.length === 0) {
+        document.getElementById("search_error").innerText = "No users found.";
+        document.getElementById("search_error").style.display = "block";
+        return;
+      }
+
+      // build cards for each user
+      let html = "";
+      data.users.forEach((u, idx) => {
+        const checked = (u.checkin || "").toString().toLowerCase().includes("✔") ||
+          (u.checkin || "").toString().toLowerCase().includes("check");
+        html += `
+      <div class="user-box">
+        <p><strong>${idx + 1}.</strong> ${u.name || ""}</p>
+        <p><strong>Phone:</strong> ${u.phone || ""}</p>
+        <p><strong>Email:</strong> ${u.email || ""}</p>
+        <p><strong>Company:</strong> ${u.company || ""}</p>
+        <p>
+          <strong>Status:</strong>
+          <span class="badge ${checked ? "badge-green" : "badge-grey"}">
+            ${checked ? "Checked-in" : "Not checked-in"}
+          </span>
+        </p>
+        <button class="check-btn" onclick="checkIn('${u.phone}')">
+          Mark Check-in
+        </button>
+      </div>
+    `;
+      });
+
+      resultsDiv.innerHTML = html;
+    }
+
+    // CHECK-IN USER (by phone)
+    async function checkIn(phone) {
+      if (!phone) {
+        alert("Phone number missing for this record.");
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/checkin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        document.getElementById("checkin_success").style.display = "block";
+        setTimeout(() => document.getElementById("checkin_success").style.display = "none", 2000);
+        // optionally refresh search results
+        searchUser();
+      } else {
+        alert(data.error || "Error while check-in");
+      }
+    }
+  </script>
+
+</body>
+
+</html>
