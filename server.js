@@ -16,9 +16,18 @@ const authConfig = {
 
 if (process.env.GOOGLE_SERVICE_ACCOUNT) {
   // Production: Use environment variable
-  const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
+  let credentials;
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
+    // Option 1: Base64 Encoded (Safest for copy-paste)
+    const decoded = Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8');
+    credentials = JSON.parse(decoded);
+  } else if (process.env.GOOGLE_SERVICE_ACCOUNT) {
+    // Option 2: Direct JSON
+    credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
+  }
+
   // FIX: Handle private_key newline issues common in some hosting envs
-  if (credentials.private_key) {
+  if (credentials && credentials.private_key) {
     credentials.private_key = credentials.private_key.replace(/\\n/g, "\n");
   }
   authConfig.credentials = credentials;
